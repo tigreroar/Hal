@@ -81,9 +81,9 @@ def get_response(user_input, history):
     # 1. Configure Google GenAI
     genai.configure(api_key=api_key)
     
-    # Use gemini-1.5-flash (Stable and fast)
+    # --- UPDATED MODEL TO GEMINI 2.5 FLASH ---
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
+        model_name="gemini-2.5-flash", 
         system_instruction=SYSTEM_PROMPT
     )
 
@@ -102,7 +102,7 @@ def get_response(user_input, history):
 
 # --- Chat Interface ---
 st.title("🏠 Donny: Real Estate AI Agent")
-st.caption("Powered by Gemini 1.5 Flash (Lite Version)")
+st.caption("Powered by Agent Cach AI")
 
 # Initialize history in Gemini format
 if "chat_history" not in st.session_state:
@@ -137,3 +137,8 @@ if prompt := st.chat_input("Type here... (e.g., My addresses are...)"):
         # Update technical history for Gemini
         st.session_state.chat_history.append({"role": "user", "parts": [prompt]})
         st.session_state.chat_history.append({"role": "model", "parts": [response_text]})
+        
+        # Update technical history for Gemini
+        st.session_state.chat_history.append({"role": "user", "parts": [prompt]})
+        st.session_state.chat_history.append({"role": "model", "parts": [response_text]})
+
