@@ -2,10 +2,10 @@ import streamlit as st
 import google.generativeai as genai
 from duckduckgo_search import DDGS
 
-# --- Configuración de Página ---
+# --- Page Configuration ---
 st.set_page_config(page_title="Hal - ShowSmart AI", page_icon="🏠", layout="wide")
 
-# Estilos CSS para impresión limpia
+# Custom CSS for clean printing
 st.markdown("""
     <style>
         @media print {
@@ -16,42 +16,43 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- Sidebar: Configuración ---
+# --- Sidebar: Configuration ---
 with st.sidebar:
-    st.title("🔧 Configuración")
+    st.title("🔧 Configuration")
     if "GOOGLE_API_KEY" in st.secrets:
         api_key = st.secrets["GOOGLE_API_KEY"]
     else:
-        api_key = st.text_input("Ingresa tu Google API Key", type="password")
+        api_key = st.text_input("Enter your Google API Key", type="password")
         if not api_key:
-            st.warning("Por favor ingresa tu API Key para comenzar.")
-            st.markdown("[Obtén tu API Key aquí](https://aistudio.google.com/app/apikey)")
+            st.warning("Please enter your API Key to start.")
+            st.markdown("[Get your API Key here](https://aistudio.google.com/app/apikey)")
 
-# --- Lógica de Búsqueda (Versión Lite) ---
+# --- Search Logic (Lite Version) ---
 def search_property_info(user_text):
-    keywords = ["calle", "av", "avenida", "road", "st", "street", "casa", "address", "#"]
-    # Verifica si hay palabras clave y longitud suficiente
+    # Keywords to identify if the user is talking about addresses
+    keywords = ["avenue", "road", "st", "street", "dr", "drive", "lane", "blvd", "home", "house", "address", "#"]
+    
+    # Check if keywords exist and text is long enough
     if any(k in user_text.lower() for k in keywords) and len(user_text) > 10:
-        with st.status("🕵️ Hal está investigando las propiedades...", expanded=True) as status:
+        with st.status("🕵️ Hal is researching the properties...", expanded=True) as status:
             ddgs = DDGS()
             results = ""
             try:
-                st.write("Consultando base de datos inmobiliaria...")
+                st.write("Consulting real estate database...")
                 search_results = ddgs.text(user_text + " real estate listing features", max_results=4)
                 
                 if search_results:
                     for r in search_results:
                         results += f"- {r['title']}: {r['body']}\n"
                 
-                status.update(label="¡Investigación completa!", state="complete", expanded=False)
+                status.update(label="Research complete!", state="complete", expanded=False)
                 return results
             except Exception as e:
-                status.update(label="Error en búsqueda (continuando sin datos externos)", state="error")
+                status.update(label="Search error (continuing without external data)", state="error")
                 return ""
     return ""
 
-# --- Configuración del Modelo Gemini ---
-# NOTA IMPORTANTE: Las tres comillas abajo cierran el texto. No las borres.
+# --- Gemini Model Configuration ---
 SYSTEM_PROMPT = """
 Role: You are "Hal The ShowSmart AI Agent from AgentCoachAi.com." Your mission is to help real estate agents like Fernando look like elite experts during property tours.
 
@@ -82,17 +83,17 @@ Tone: Strategic, encouraging, and highly professional.
 
 def get_response(user_input, history):
     if not api_key:
-        return "Por favor configura tu API Key en el menú lateral."
+        return "Please configure your API Key in the sidebar."
     
     genai.configure(api_key=api_key)
     
-    # Usamos gemini-1.5-flash que es rápido y estable
+    # Using gemini-1.5-flash (Fixed from 2.5 which does not exist yet)
     model = genai.GenerativeModel(
         model_name="gemini-2.5-flash", 
         system_instruction=SYSTEM_PROMPT
     )
 
-    # Búsqueda manual (RAG)
+    # Manual Search (RAG)
     extra_info = search_property_info(user_input)
     
     final_message = user_input
@@ -103,21 +104,21 @@ def get_response(user_input, history):
     response = chat.send_message(final_message)
     return response.text
 
-# --- Interfaz de Chat ---
-st.title("🏠 Hal: Agente de Bienes Raíces")
+# --- Chat Interface ---
+st.title("🏠 Hal: Real Estate AI Agent")
 st.caption("Powered by Agent Coach AI")
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-    st.session_state.messages = [{"role": "assistant", "content": "¡Hola! Soy HAL. Por favor comparte tu nombre, punto de partida y las direcciones de las propiedades."}]
+    st.session_state.messages = [{"role": "assistant", "content": "Hi! I'm HAL. Please share your name, starting point, and the property addresses."}]
 
-# Mostrar mensajes anteriores
+# Display previous messages
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# Input del usuario
-if prompt := st.chat_input("Escribe aquí... (Ej: Mis direcciones son...)"):
+# User Input
+if prompt := st.chat_input("Type here... (e.g., My addresses are...)"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -128,7 +129,6 @@ if prompt := st.chat_input("Escribe aquí... (Ej: Mis direcciones son...)"):
         
         st.session_state.messages.append({"role": "assistant", "content": response_text})
         
-        # Actualizar historial técnico para Gemini
+        # Update technical history for Gemini
         st.session_state.chat_history.append({"role": "user", "parts": [prompt]})
         st.session_state.chat_history.append({"role": "model", "parts": [response_text]})
-
