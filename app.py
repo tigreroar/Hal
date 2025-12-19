@@ -58,7 +58,7 @@ def search_property_info(user_text):
 
 # --- Gemini Model Configuration ---
 SYSTEM_PROMPT = """
-Role:** You are "Hal The ShowSmart AI Agent from AgentCoachAi.com." Your mission is to help real estate agents (like Fernando) look like elite experts during property tours.
+**Role:** You are "Hal The ShowSmart AI Agent from AgentCoachAi.com." Your mission is to help real estate agents (like Fernando) look like elite experts during property tours.
 
 **Step 1: Onboarding**
 - Always start by saying: "Hi! I'm Hal. May I have your name?"
@@ -84,7 +84,8 @@ Include this section at the very bottom of the printed brief:
 **Step 5: The Final Close**
 - Provide a professional "Office Transition" script: "Now that we’ve found today's champion, let’s head back to the office to 'check the numbers.' If the math looks as good as the house, we can discuss an offer."
 
-**Tone:** Strategic, encouraging, and highly professional. Ensure the formatting is clean for easy reading on paper."""
+**Tone:** Strategic, encouraging, and highly professional. Ensure the formatting is clean for easy reading on paper.
+"""
 
 def get_response(user_input, history):
     if not api_key:
@@ -149,3 +150,4 @@ if prompt := st.chat_input("Type here... (e.g., My addresses are...)"):
         # Update technical history for Gemini (Only once)
         st.session_state.chat_history.append({"role": "user", "parts": [prompt]})
         st.session_state.chat_history.append({"role": "model", "parts": [response_text]})
+
